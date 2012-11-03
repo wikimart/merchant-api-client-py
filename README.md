@@ -1,4 +1,4 @@
-merchant-api-client-py
-======================
+Wikimart Merchant API client (Python)
+===================
 
-Merchant API Client on Python
+Описание Wikimart Merchant API: http://merchant.wikimart.ru/api/1.0/doc
