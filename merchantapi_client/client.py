@@ -37,7 +37,11 @@ class MerchantAPI:
 	STATUS_ANNULED   = 'annuled';
 	STATUS_INVALID   = 'invalid';
 	STATUS_FAKED     = 'faked';
-
+     
+	## 
+	#  @param $host      Хост Wikimart merchant API
+	#  @param $appID     Идентификатор доступа
+	#  @param $appSecret Секретный ключ
 	def __init__(self, host, appID, appSecret):
 		self.host = host
 		self.accessId =appID
@@ -67,13 +71,13 @@ class MerchantAPI:
 		header = {'Accept': 'application/json', \
 			'X-WM-Date': utils.formatdate(dtimestamp), \
 			'X-WM-Authentication': "%s:%s" % (self.accessId, self._generateSignature(uri, method, date, body))}
-		if method == self.METHOD_GET or method == self.METHOD_POST or method == METHOD_DELETE:
+		if method == self.METHOD_GET or method == METHOD_DELETE:
 			try:
 				connect.request(method, uri, headers=header)
 				resp = connect.getresponse()
 			except Exception:
 				raise Exception('Can`t get response')
-		elif method == METHOD_PUT:
+		elif method == METHOD_PUT or method == self.METHOD_POST:
 			try:
 				data = body
 				connect.request(method, uri, data, header)
@@ -109,12 +113,27 @@ class MerchantAPI:
 					  + uri
 		return hmac.new(str_to_hash, ).hexdigest()
 	
-	
+	## Получение информации о заказе
+	#  @param 	orderID	Идентификатор заказа
+	#
+	#  @return 	merchantapi-client.Response
+	#  @throws 	ValueError
 	def methodGetOrder(self, orderID):
 		if not isinstance(orderID, int):
 			raise ValueError('Argument \'orderID\' must be integer')
 		return self._api("/api/1.0/orders/{orderID}".format(orderID=orderID), self.METHOD_GET)
 
+	## Получение списка заказов 
+	#  @param count                 Колличество возвращаемых заказов на "странице"
+	#  @param page                  Порядковый номер "страницы" (начиная с 1)
+	#  @param status                Фильтр по статусам. Допустимые значения: opened, canceled, rejected, confirmed,
+	#                                                                        annuled, invalid, faked
+	#  @param transitionDateFromi   Начало диапазона времени изменения статуса заказа
+	#  @param transitionDateTo      Конец диапозона времени изменения статуса заказа
+	#  @param transitionStatus 		
+	#
+	#  @return 	merchantapi-client.Response
+	#  @throws 	ValueError
 	def methodGetOrderList(self, count, page, status=None, transitionDateFrom=None, transitionDateTo=None, transitionStatus=None):
 		params = {}
 		if not isinstance(count, int):
@@ -149,11 +168,24 @@ class MerchantAPI:
 				params['transitionStatus'] = transitionStatus
 		return self._api("/api/1.0/orders?" + urllib.urlencode(params), self.METHOD_GET)
 	
+	## Получение списка причин для смены статуса заказа
+	#  @param 	orderID Идентификатор заказа
+	#
+	#  @return 	merchantapi-client.Response
+	#  @throws 	ValueError
 	def methodGetOrderStatusReasons(self, orderID):
 		if not isinstance(orderID, int):
 			raise ValueError('Argument \'orderID\' must be integer')
 		return self._api("/api/1.0/orders/{orderID}/transitions".format(orderID=orderID), self.METHOD_GET)
 
+	## Смена статуса заказа
+	#  @param 	orderID  Идентификатор заказа
+	#  @param 	status 	 Устанавливаемый статус
+	#  @param 	reasonID Идентификатор причины смены статуса заказа
+	#  @param 	comment  Коментарий к смене статуса
+	#
+	#  @return 	merchantapi-client.Response
+	#  @throws 	ValueError
 	def methodSetOrderStatus(self, orderID, status, reasonID, comment):
 		if not isinstance(orderID, int):
 			raise ValueError('Argument \'orderID\' must be integer')
@@ -168,6 +200,11 @@ class MerchantAPI:
 
 		return self._api('/api/1.0/orders/{orderID}/transitions'.format(orderID=orderID), self.METHOD_PUT, json.dumps(put_body))
 	
+	## Получение истории смены статусов заказа
+	#  @param 	orderID Идентификатор заказа
+	#
+	#  @return 	merchantapi-client.Response
+	#  @throws 	ValueError
 	def methodGetOrderStatusHistory(self, orderID):
 		if not isinstance(orderID, int):
 			raise ValueError('Argument \'orderID\' must be integer')
