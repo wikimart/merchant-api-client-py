@@ -1,4 +1,4 @@
-import merchantapi_client
+from merchantapi_client import *
 
 mapi = MerchantAPI("merchant-api-test.lan", "13491868046632", "FgVHxZrdzzXhKVW5gECGTg")
 response = mapi.methodGetOrderList(10, 1) 

@@ -1,3 +1,3 @@
 __all__ = ["MerchantAPI"]
-import client.MerchantAPI
+from  client import MerchantAPI
 

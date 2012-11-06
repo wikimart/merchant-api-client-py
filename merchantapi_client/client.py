@@ -115,19 +115,19 @@ class MerchantAPI:
 			raise ValueError('Argument \'orderID\' must be integer')
 		return self._api("/api/1.0/orders/{orderID}".format(orderID=orderID), self.METHOD_GET)
 
-	def methodGetOrderList(self, count, offset, status=None, transitionDateFrom=None, transitionDateTo=None, transitionStatus=None):
+	def methodGetOrderList(self, count, page, status=None, transitionDateFrom=None, transitionDateTo=None, transitionStatus=None):
 		params = {}
 		if not isinstance(count, int):
 			raise ValueError('Argument \'count\' must be integer')
 		else:
 			params['pageSize'] = count
 
-		if not isinstance(offset, int):
-			raise ValueError('Argument \'offset\' must be integer')
+		if not isinstance(page, int):
+			raise ValueError('Argument \'page\' must be integer')
 		else:
-			params['offset'] = offset
+			params['page'] = page
 		validStatuses = ['opened', 'canceled', 'rejected', 'confirmed', 'annuled', 'invalid', 'faked']
-		if status is None:
+		if status is not None:
 			if status not in validStatuses:
 				raise ValueError( 'Valid values for argument \'status\' is: '+ ', '.join(validStatuses))
 			else:
@@ -144,10 +144,10 @@ class MerchantAPI:
 			params['transitionDateFrom'] = utils.formatdate(dtimestamp)
 		if transitionStatus != None:
 			if transitionStatus not in validStatuses:
-				raise ValueError( 'Valid values for argument \'status\' is: '+ ', '.join(validStatuses))
+				raise ValueError( 'Valid values for argument \'transitionStatus\' is: '+ ', '.join(validStatuses))
 			else:
 				params['transitionStatus'] = transitionStatus
-		return self._api("/api/1.0/orders?".format(orderID=orderID), self.METHOD_GET)
+		return self._api("/api/1.0/orders?" + urllib.urlencode(params), self.METHOD_GET)
 	
 	def methodGetOrderStatusReasons(self, orderID):
 		if not isinstance(orderID, int):
